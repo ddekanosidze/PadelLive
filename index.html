@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="ka">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1220">
+<title>PadelLive — პადელი ონლაინ</title>
+<meta name="description" content="პადელის პირდაპირი ეთერი, ლაივ სქორი, ტურნირების ბადე, რეიტინგები და ჩოგნის შერჩევა.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar-in">
+    <a class="brand" href="#home" aria-label="PadelLive">
+      <span class="brand-ball" aria-hidden="true"></span>
+      <span class="brand-t">Padel<b>Live</b></span>
+    </a>
+    <nav class="tabs" id="tabs" aria-label="მთავარი ნავიგაცია">
+      <a href="#home" data-page="home"><i>🏠</i><span>მთავარი</span></a>
+      <a href="#tv" data-page="tv"><i>📺</i><span><b class="lf">Live TV</b><b class="sf">TV</b></span><em class="dot" id="tv-dot" hidden></em></a>
+      <a href="#score" data-page="score"><i>⚡</i><span><b class="lf">Live Score</b><b class="sf">Score</b></span><em class="dot" id="score-dot" hidden></em></a>
+      <a href="#bracket" data-page="bracket"><i>🏆</i><span><b class="lf">ტურნირის ბადე</b><b class="sf">ბადე</b></span></a>
+      <a href="#ranks" data-page="ranks"><i>📊</i><span>რეიტინგი</span></a>
+      <a href="#profile" data-page="profile"><i>🎾</i><span><b class="lf">ჩემი ჩოგანი</b><b class="sf">ჩოგანი</b></span></a>
+    </nav>
+    <div class="auth-box">
+      <span class="badge admin-badge admin-only" title="ადმინის რეჟიმი">ADMIN</span>
+      <button class="btn sm" id="auth-btn" aria-haspopup="dialog"><i>🔐</i> <span id="auth-btn-t">შესვლა</span></button>
+    </div>
+    <button class="icon-btn" id="theme-btn" title="თემის შეცვლა" aria-label="თემის შეცვლა">🌓</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="page-home" class="page" hidden></section>
+
+  <section id="page-tv" class="page" hidden>
+    <div class="page-head">
+      <div>
+        <h1>Live TV</h1>
+        <p class="muted guest-only">აირჩიე სტრიმი სიიდან და უყურე პირდაპირ ეთერს.</p>
+        <p class="muted admin-only">დაამატე სტრიმი ბმულით (YouTube, Twitch, Vimeo ან ნებისმიერი iframe) და აირჩიე რომელი გინდა ჩართო.</p>
+      </div>
+      <div class="seg" id="tv-layout" role="group" aria-label="ეკრანის განლაგება">
+        <button data-action="layout" data-n="1" title="1 ეკრანი">▣ 1</button>
+        <button data-action="layout" data-n="2" title="2 ეკრანი">◫ 2</button>
+        <button data-action="layout" data-n="4" title="4 ეკრანი">▦ 4</button>
+      </div>
+    </div>
+    <div class="tv-layout">
+      <aside class="card tv-side">
+        <h3>სტრიმები</h3>
+        <ul class="stream-list" id="tv-list"></ul>
+        <form id="tv-form" class="stack admin-only" autocomplete="off">
+          <h4>+ ახალი სტრიმი</h4>
+          <input name="name" placeholder="სახელი (მაგ. კორტი #1)" required maxlength="40">
+          <textarea name="url" rows="2" placeholder="ბმული ან &lt;iframe ...&gt; კოდი" required></textarea>
+          <button class="btn primary" type="submit">დამატება</button>
+          <p class="hint" id="tv-msg"></p>
+        </form>
+        <details class="hint-box admin-only">
+          <summary>რომელი ბმულები მუშაობს?</summary>
+          <ul>
+            <li>YouTube: <code>youtube.com/watch?v=…</code>, <code>youtu.be/…</code>, <code>youtube.com/live/…</code>, არხის LIVE: <code>youtube.com/channel/UC…</code></li>
+            <li>Twitch: <code>twitch.tv/არხი</code></li>
+            <li>Vimeo: <code>vimeo.com/123456</code></li>
+            <li>სხვა: ნებისმიერი ბმული, რომელიც iframe-ში ჩაშენებას უშვებს, ან პირდაპირ ჩასვი <code>&lt;iframe&gt;</code> კოდი.</li>
+          </ul>
+        </details>
+      </aside>
+      <div class="tv-main">
+        <div class="tv-grid" id="tv-grid"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="page-score" class="page" hidden>
+    <div class="page-head">
+      <div>
+        <h1>Live Score</h1>
+        <p class="muted">პადელის ქულების სისტემა: 15-30-40, „ოქროს ქულა“ 40-40-ზე, სეტი 6 გეიმამდე, 6-6-ზე ტაიბრეიკი.</p>
+      </div>
+      <div class="row gap">
+        <div class="seg" id="score-filter">
+          <button data-action="sfilter" data-f="all">ყველა</button>
+          <button data-action="sfilter" data-f="live">LIVE</button>
+          <button data-action="sfilter" data-f="upcoming">მოსალოდნელი</button>
+          <button data-action="sfilter" data-f="finished">დასრულებული</button>
+        </div>
+        <label class="switch admin-only" title="ქულების შეყვანა">
+          <input type="checkbox" id="operator-toggle"><span></span> ოპერატორი
+        </label>
+      </div>
+    </div>
+    <form id="match-form" class="card inline-form" hidden autocomplete="off">
+      <input name="t1" placeholder="წყვილი 1" required maxlength="40">
+      <input name="t2" placeholder="წყვილი 2" required maxlength="40">
+      <input name="court" placeholder="კორტი / ეტაპი" maxlength="30">
+      <button class="btn primary" type="submit">+ მატჩის დამატება</button>
+    </form>
+    <div class="match-grid" id="score-list"></div>
+  </section>
+
+  <section id="page-bracket" class="page" hidden>
+    <div class="page-head">
+      <div>
+        <h1 id="bracket-title-h">ტურნირის ბადე</h1>
+        <p class="muted">დააჭირე წყვილს, რომ გამარჯვებულად მონიშნო — ის შემდეგ ეტაპზე გადავა.</p>
+      </div>
+      <div class="row gap">
+        <select id="bracket-size" class="admin-only" aria-label="წყვილების რაოდენობა">
+          <option value="4">4 წყვილი</option>
+          <option value="8">8 წყვილი</option>
+          <option value="16">16 წყვილი</option>
+        </select>
+        <label class="switch admin-only"><input type="checkbox" id="bracket-edit"><span></span> რედაქტირება</label>
+        <button class="btn admin-only" data-action="bracket-reset">შედეგების გასუფთავება</button>
+      </div>
+    </div>
+    <div id="bracket-title-wrap" class="card inline-form" hidden>
+      <input id="bracket-title" placeholder="ტურნირის სახელი" maxlength="60">
+    </div>
+    <div class="bracket-scroll"><div class="bracket" id="bracket"></div></div>
+  </section>
+
+  <section id="page-ranks" class="page" hidden>
+    <div class="page-head">
+      <div>
+        <h1>პადელის რეიტინგი</h1>
+        <p class="muted warn-note">⚠ სადემონსტრაციო ქულები — ოფიციალურ რეიტინგს ვერ ჩაანაცვლებს. ჩართე რედაქტირება და შეიყვანე ქულები.</p>
+      </div>
+      <div class="row gap">
+        <div class="seg" id="rank-gender">
+          <button data-action="rgender" data-g="men">მამაკაცები</button>
+          <button data-action="rgender" data-g="women">ქალები</button>
+        </div>
+        <input type="search" id="rank-search" placeholder="🔍 მოძებნე მოთამაშე" aria-label="ძებნა">
+        <label class="switch admin-only"><input type="checkbox" id="rank-edit"><span></span> რედაქტირება</label>
+      </div>
+    </div>
+    <form id="rank-form" class="card inline-form" hidden autocomplete="off">
+      <input name="n" placeholder="მოთამაშის სახელი" required maxlength="40">
+      <input name="c" placeholder="ქვეყანა (GEO)" maxlength="3" style="max-width:120px">
+      <input name="p" type="number" min="0" placeholder="ქულა" required style="max-width:120px">
+      <button class="btn primary" type="submit">+ დამატება</button>
+    </form>
+    <div class="card table-card">
+      <table class="rank-table">
+        <thead><tr><th>#</th><th>მოთამაშე</th><th>ქვეყანა</th><th class="num">ქულა</th><th></th></tr></thead>
+        <tbody id="rank-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="page-profile" class="page" hidden>
+    <div class="page-head">
+      <div>
+        <h1>ჩემი პროფილი და ჩოგნის შერჩევა</h1>
+        <p class="muted">მიუთითე შენი პარამეტრები და სტილი — მოგცემ 3 ყველაზე შესაფერის ჩოგანს.</p>
+      </div>
+    </div>
+    <div class="profile-layout">
+      <form id="profile-form" class="card stack" autocomplete="off">
+        <div class="grid-2">
+          <label>სახელი<input name="name" placeholder="არასავალდებულო" maxlength="30"></label>
+          <label>სქესი
+            <select name="gender"><option value="m">მამრობითი</option><option value="f">მდედრობითი</option></select>
+          </label>
+          <label>ასაკი<input name="age" type="number" min="8" max="90" value="30" required></label>
+          <label>სიმაღლე (სმ)<input name="height" type="number" min="120" max="230" value="175" required></label>
+          <label>წონა (კგ)<input name="weight" type="number" min="30" max="200" value="75" required></label>
+          <label>წამყვანი ხელი
+            <select name="hand"><option value="right">მარჯვენა</option><option value="left">მარცხენა</option></select>
+          </label>
+          <label>პოზიცია კორტზე
+            <select name="side">
+              <option value="both">ორივე მხარეს</option>
+              <option value="drive">მარჯვენა მხარე (Drive)</option>
+              <option value="reves">მარცხენა მხარე (Revés)</option>
+            </select>
+          </label>
+          <label>დონე
+            <select name="level">
+              <option value="beginner">დამწყები</option>
+              <option value="intermediate" selected>საშუალო</option>
+              <option value="advanced">მოწინავე / ტურნირული</option>
+            </select>
+          </label>
+          <label>თამაშის სტილი
+            <select name="style">
+              <option value="attack">შეტევითი (ძალა, სმეში, ბანდეხა)</option>
+              <option value="allround" selected>უნივერსალური</option>
+              <option value="defense">დაცვითი (კონტროლი, ლობები)</option>
+            </select>
+          </label>
+          <label>რამდენჯერ თამაშობ
+            <select name="freq">
+              <option value="rare">თვეში 1-2-ჯერ</option>
+              <option value="weekly" selected>კვირაში 1-2-ჯერ</option>
+              <option value="often">კვირაში 3+</option>
+            </select>
+          </label>
+          <label>ბიუჯეტი
+            <select name="budget">
+              <option value="1">ეკონომიური (~€80-120)</option>
+              <option value="2" selected>საშუალო (~€120-220)</option>
+              <option value="3">პრემიუმი (€220+)</option>
+            </select>
+          </label>
+        </div>
+        <fieldset>
+          <legend>ტრავმები / ტკივილები</legend>
+          <div class="checks">
+            <label class="chk"><input type="checkbox" name="inj" value="elbow"> იდაყვი</label>
+            <label class="chk"><input type="checkbox" name="inj" value="shoulder"> მხარი</label>
+            <label class="chk"><input type="checkbox" name="inj" value="wrist"> მაჯა</label>
+            <label class="chk"><input type="checkbox" name="inj" value="back"> ზურგი</label>
+          </div>
+        </fieldset>
+        <button class="btn primary big" type="submit">🎾 მირჩიე ჩოგანი</button>
+      </form>
+
+      <div id="profile-result" class="profile-result">
+        <div class="card empty">
+          <div class="big-emoji">🎾</div>
+          <p>შეავსე ფორმა და დააჭირე „მირჩიე ჩოგანი“.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot wrap">
+  <p>PadelLive · პადელის გულშემატკივართა და მოთამაშეთა საიტი · მონაცემები ინახება შენს ბრაუზერში</p>
+</footer>
+
+<dialog id="auth-dlg" class="dlg" aria-label="ავტორიზაცია">
+  <button class="dlg-x" data-action="auth-close" aria-label="დახურვა">✕</button>
+  <div id="auth-body"></div>
+</dialog>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
